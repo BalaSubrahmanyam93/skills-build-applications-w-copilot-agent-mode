@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react'
 import { apiBaseUrl, fetchEndpoint } from '../api.js'
 
+const codespaceName = import.meta.env.VITE_CODESPACE_NAME?.trim()
+const activitiesEndpoint = codespaceName
+  ? `https://${codespaceName}-8000.app.github.dev/api/activities/`
+  : `${apiBaseUrl}/api/activities/`
+
 function Activities() {
   const [activities, setActivities] = useState([])
   const [error, setError] = useState('')
-  useEffect(() => { fetchEndpoint(`${apiBaseUrl}/api/activities/`).then(setActivities).catch((requestError) => setError(requestError.message)) }, [])
+  useEffect(() => { fetchEndpoint(activitiesEndpoint).then(setActivities).catch((requestError) => setError(requestError.message)) }, [])
   return <section className="data-view"><PageHeading eyebrow="MOVEMENT LOG" title="Activities" copy="Every session is a signal. Keep the streak visible." />{error ? <ErrorNotice message={error} /> : <div className="activity-list">{activities.length ? activities.map((activity) => <article className="activity-row" key={activity._id || activity.id || `${activity.type}-${activity.completedAt}`}><span className="activity-glyph">{activity.type === 'run' ? 'R' : activity.type === 'cycle' ? 'C' : 'S'}</span><span className="activity-main"><b>{activity.type || 'Workout'}</b><small>{activity.user?.displayName || activity.user?.username || 'OctoFit member'} - {formatDate(activity.completedAt)}</small></span><strong>{activity.durationMinutes || 0}<small> min</small></strong><span className="activity-calories">{activity.calories || 0} kcal</span></article>) : <EmptyState label="No activities logged yet" />}</div>}</section>
 }
 export default Activities
